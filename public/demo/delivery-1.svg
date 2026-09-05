@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#0A2E63"/>
+  <rect x="60" y="60" width="1080" height="1080" fill="none" stroke="#C9A96E" stroke-width="4" opacity="0.5"/>
+  <g fill="#C9A96E">
+    <path d="M470 480h260a30 30 0 0 1 30 30v200h-320V510a30 30 0 0 1 30-30z" opacity="0.9"/>
+    <rect x="400" y="700" width="400" height="40" rx="12"/>
+    <rect x="580" y="740" width="40" height="90"/>
+    <rect x="480" y="830" width="240" height="24" rx="12"/>
+  </g>
+  <text x="600" y="960" text-anchor="middle" font-family="Georgia, serif" font-size="52" fill="#C9A96E">Kanziy Delivery — Lagos</text>
+  <text x="600" y="1030" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" letter-spacing="8" fill="#C9A96E" opacity="0.7">KANZIY — DEMO IMAGE</text>
+</svg>

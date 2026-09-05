@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #011d48;
+  --gold: #b08d57;
+}
+
+body {
+  @apply bg-white text-charcoal antialiased;
+}
+
+@layer components {
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-wide text-navy transition hover:bg-gold-bright;
+  }
+  .btn-navy {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-navy px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-navy-light;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-gold px-6 py-3 text-sm font-semibold uppercase tracking-wide text-navy transition hover:bg-cream;
+  }
+  .input {
+    @apply w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-gold focus:ring-1 focus:ring-gold;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-charcoal;
+  }
+  .admin-card {
+    @apply rounded-lg border border-gray-200 bg-white p-5 shadow-sm;
+  }
+}

@@ -1,0 +1,199 @@
+// Kanziy Sales Commerce Platform — data model
+//
+// V1 runs on SQLite for a zero-config development database. For production,
+// switch the datasource provider to "postgresql" and point DATABASE_URL at
+// Supabase/Postgres — the schema is written to be portable (no SQLite-only
+// features; enums are modelled as validated strings).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Staff & access ──────────────────────────────────────────────────────────
+
+// role: SUPER_ADMIN | SUPPORT | CONTENT_ADMIN
+model User {
+  id           String            @id @default(cuid())
+  email        String            @unique
+  name         String
+  passwordHash String
+  role         String            @default("SUPPORT")
+  active       Boolean           @default(true)
+  pageAccess   StaffPageAccess[]
+  notes        OrderNote[]
+  orderEvents  OrderEvent[]
+  confirmedOrders Order[]        @relation("ConfirmedBy")
+  createdAt    DateTime          @default(now())
+}
+
+// Staff are granted access to sales pages (not individual orders).
+model StaffPageAccess {
+  id          String    @id @default(cuid())
+  userId      String
+  salesPageId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  salesPage   SalesPage @relation(fields: [salesPageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, salesPageId])
+}
+
+// ── Catalogue ───────────────────────────────────────────────────────────────
+
+model Product {
+  id               String     @id @default(cuid())
+  name             String
+  slug             String     @unique
+  category         String?
+  price            Int // Naira (whole units)
+  shortPitch       String? // one-line selling proposition
+  description      String?
+  features         String? // JSON string[]
+  specifications   String? // JSON {label,value}[]
+  dimensions       String?
+  materials        String?
+  colors           String? // JSON string[]
+  deliveryInfo     String?
+  installationInfo String?
+  images           String? // JSON string[] of URLs (first = main image)
+  videoUrl         String?
+  featured         Boolean    @default(false)
+  onHomepage       Boolean    @default(false)
+  bestSeller       Boolean    @default(false)
+  active           Boolean    @default(true)
+  seoTitle         String?
+  seoDescription   String?
+  salesPage        SalesPage?
+  orders           Order[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+// ── Sales pages ─────────────────────────────────────────────────────────────
+
+// template: clean | bold | editorial | direct — all templates render the same
+// content; only design/layout differs, so a page can switch template freely
+// without changing its URL.
+// status: DRAFT | PUBLISHED | UNPUBLISHED
+model SalesPage {
+  id             String            @id @default(cuid())
+  productId      String            @unique
+  product        Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  slug           String            @unique // public URL: /products/[slug]
+  template       String            @default("clean")
+  status         String            @default("DRAFT")
+  headline       String? // conversion headline (overrides product name display)
+  subheadline    String?
+  sellingPoints  String? // JSON string[]
+  testimonials   String? // JSON {name, location?, text, rating?}[]
+  deliveryPhotos String? // JSON string[] of URLs (previous deliveries / installs)
+  faqs           String? // JSON {q, a}[]
+  ctaText        String? // e.g. "ORDER NOW"
+  views          Int               @default(0)
+  staffAccess    StaffPageAccess[]
+  orders         Order[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+// ── Orders ──────────────────────────────────────────────────────────────────
+
+// status: NEW | CONFIRMED | NOT_BUYING | NOT_REACHABLE | CANCELLED
+// purchaseEventStatus: NOT_SENT | SENT | FAILED | SKIPPED
+model Order {
+  id          String     @id @default(cuid())
+  ref         String     @unique // e.g. KZ-84213
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id])
+  salesPageId String?
+  salesPage   SalesPage? @relation(fields: [salesPageId], references: [id])
+
+  // snapshot of what was ordered (survives later product edits)
+  productName String
+  unitPrice   Int
+  quantity    Int    @default(1)
+  totalValue  Int
+
+  // customer
+  customerName String
+  phone        String
+  whatsapp     String?
+  address      String
+  state        String
+  city         String?
+  customerNote String?
+
+  // workflow
+  status        String    @default("NEW")
+  confirmedById String?
+  confirmedBy   User?     @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+  confirmedAt   DateTime?
+  followUpAt    DateTime?
+  followUpNote  String?
+
+  // attribution (captured at submit time, kept for the life of the order)
+  trafficSource String? // meta | instagram | google | organic | direct | referral
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmContent    String?
+  utmTerm       String?
+  fbclid        String?
+  gclid         String?
+  fbp           String?
+  fbc           String?
+  landingUrl    String?
+  referrer      String?
+  userAgent     String?
+  ip            String?
+
+  // Meta events — Lead fires on submit; Purchase only on confirmation, once.
+  leadEventId          String?
+  purchaseEventId      String?
+  purchaseEventStatus  String    @default("NOT_SENT")
+  purchaseEventSentAt  DateTime?
+  purchaseEventError   String?
+
+  notes  OrderNote[]
+  events OrderEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([salesPageId])
+}
+
+// Internal notes — never shown to customers.
+model OrderNote {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  text      String
+  createdAt DateTime @default(now())
+}
+
+// Automatic activity timeline for every order.
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  type      String // SUBMITTED | VIEWED | STATUS_CHANGED | NOTE_ADDED | FOLLOW_UP_SET | FOLLOW_UP_CLEARED | PURCHASE_EVENT_SENT | PURCHASE_EVENT_FAILED | LEAD_EVENT_SENT | COPIED_FOR_OPS
+  message   String
+  createdAt DateTime @default(now())
+}
+
+// Key/value system settings (phone, WhatsApp, Meta pixel config, …).
+model Setting {
+  key   String @id
+  value String
+}
