@@ -110,10 +110,17 @@ dropped.
 
 ## Production notes (Vercel + Supabase)
 
-1. Create a Supabase project, set `DATABASE_URL` to its pooled connection
-   string, and run `npx prisma db push && npm run db:seed` against it once.
-   Then import the repo on Vercel with `DATABASE_URL`, `AUTH_SECRET` and
-   `NEXT_PUBLIC_SITE_URL` set as environment variables.
+1. Create a Supabase project and set up its database **either** way:
+   - **No terminal**: open Supabase → SQL Editor, paste the contents of
+     [`database-setup.sql`](./database-setup.sql), and click Run (once, on
+     the fresh project). This creates all tables plus the starter accounts,
+     settings and demo products.
+   - **Terminal**: set `DATABASE_URL` to the Supabase connection string and
+     run `npx prisma db push && npm run db:seed`.
+
+   Then import the repo on Vercel with `DATABASE_URL` (the pooled
+   connection string), `AUTH_SECRET` and `NEXT_PUBLIC_SITE_URL` set as
+   environment variables.
 2. Set a strong `AUTH_SECRET`; replace all seeded passwords.
 3. Configure phone/WhatsApp and Meta tracking in Admin → Settings.
 4. Replace `/public/demo/*.svg` placeholder imagery with real Kanziy
