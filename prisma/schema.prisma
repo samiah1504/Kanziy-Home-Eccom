@@ -1,16 +1,17 @@
 // Kanziy Sales Commerce Platform — data model
 //
-// V1 runs on SQLite for a zero-config development database. For production,
-// switch the datasource provider to "postgresql" and point DATABASE_URL at
-// Supabase/Postgres — the schema is written to be portable (no SQLite-only
-// features; enums are modelled as validated strings).
+// Runs on Postgres (Supabase in production) — point DATABASE_URL at your
+// database. For a quick zero-config local database, switch the provider to
+// "sqlite" with DATABASE_URL="file:./dev.db"; the schema is portable in both
+// directions (no provider-specific features; enums are modelled as validated
+// strings).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

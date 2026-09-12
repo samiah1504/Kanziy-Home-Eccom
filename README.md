@@ -14,21 +14,26 @@ Kanziy e-commerce website without a rebuild.
 
 - **Next.js 14 (App Router) + React + TypeScript** — frontend and server
 - **Tailwind CSS** — Kanziy brand system (Deep Blue `#011D48`, Gold `#B08D57`)
-- **Prisma** — data layer. SQLite in development (zero config); switch the
-  provider to `postgresql` in `prisma/schema.prisma` and point
-  `DATABASE_URL` at Supabase/Postgres for production. No SQLite-only
-  features are used.
+- **Prisma + Postgres** — data layer, configured for Supabase/Postgres
+  (deploy-ready for Vercel). No provider-specific features are used, so the
+  schema also runs on SQLite for offline local development (see below).
 - Deployable to **Vercel** (or any Node host)
 
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env        # set AUTH_SECRET; Meta keys optional
-npx prisma db push          # create the database
+cp .env.example .env        # set DATABASE_URL (Postgres) and AUTH_SECRET
+npx prisma db push          # create the tables
 npm run db:seed             # demo products, pages and staff accounts
 npm run dev                 # http://localhost:3000
 ```
+
+For `DATABASE_URL`, a free Supabase project works for development too —
+create one at supabase.com and copy the pooled connection string from
+Settings → Database. If you'd rather develop fully offline, change the
+datasource provider in `prisma/schema.prisma` from `postgresql` to `sqlite`
+and set `DATABASE_URL="file:./dev.db"` (don't commit that change).
 
 Seeded logins (**change these before going live**):
 
@@ -94,7 +99,7 @@ Staff portal: `/login` → `/admin`.
 
 | Env var | Purpose |
 |---|---|
-| `DATABASE_URL` | `file:./dev.db` in dev; Postgres/Supabase URL in production |
+| `DATABASE_URL` | Postgres/Supabase connection string (pooled URL for serverless) |
 | `AUTH_SECRET` | Session-cookie signing key (`openssl rand -hex 32`) |
 | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_TEST_EVENT_CODE` | Meta tracking (Admin → Settings overrides these) |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO/sitemap |
@@ -103,10 +108,12 @@ Until a Pixel ID + CAPI token are configured, server events are recorded as
 **SKIPPED** on each order (with a retry button) instead of being silently
 dropped.
 
-## Production notes
+## Production notes (Vercel + Supabase)
 
-1. Change `prisma/schema.prisma` datasource to `postgresql`, set
-   `DATABASE_URL`, run `npx prisma db push` (or set up migrations).
+1. Create a Supabase project, set `DATABASE_URL` to its pooled connection
+   string, and run `npx prisma db push && npm run db:seed` against it once.
+   Then import the repo on Vercel with `DATABASE_URL`, `AUTH_SECRET` and
+   `NEXT_PUBLIC_SITE_URL` set as environment variables.
 2. Set a strong `AUTH_SECRET`; replace all seeded passwords.
 3. Configure phone/WhatsApp and Meta tracking in Admin → Settings.
 4. Replace `/public/demo/*.svg` placeholder imagery with real Kanziy
