@@ -63,8 +63,10 @@ export function VideoBlock({
         />
       ) : (
         // Never autoplay with sound — user presses play. preload="metadata"
-        // keeps uploaded videos from slowing the page down.
-        <video src={url} poster={poster} controls preload="metadata" playsInline className="aspect-video w-full bg-black" />
+        // keeps uploaded videos from slowing the page down. h-auto lets the
+        // player take the video's own shape (square, landscape or portrait);
+        // max-h keeps tall portrait clips from dominating the page.
+        <video src={url} poster={poster} controls preload="metadata" playsInline className="h-auto max-h-[75vh] w-full bg-black" />
       )}
     </div>
   );
@@ -175,7 +177,7 @@ export function DeliveryPhotos({
               controls
               preload="metadata"
               playsInline
-              className="aspect-video w-full rounded-md bg-black object-cover"
+              className="h-auto max-h-[70vh] w-full rounded-md bg-black"
             />
           ))}
         </div>
