@@ -23,6 +23,23 @@ export default async function OrderReceivedPage({
   if (!order) notFound();
   const settings = await getSettings();
 
+  // Pre-filled WhatsApp message with the actual order details, so Customer
+  // Support immediately knows which order the customer is asking about.
+  // whatsappLink() URL-encodes the whole message.
+  const whatsappMessage = [
+    'Hello Kanziy, I just placed an order and would like to confirm it.',
+    '',
+    `Order Reference: ${order.ref}`,
+    `Product: ${order.productName}`,
+    order.selectedColor ? `Colour: ${order.selectedColor}` : null,
+    `Quantity: ${order.quantity}`,
+    `Price: ${formatNaira(order.totalValue)}`,
+    '',
+    'Please assist me with confirming my order. Thank you.',
+  ]
+    .filter((line) => line !== null)
+    .join('\n');
+
   return (
     <>
       <SiteHeader phone={settings.phone} whatsapp={settings.whatsapp} />
@@ -75,7 +92,7 @@ export default async function OrderReceivedPage({
             <div className="mt-8 space-y-3">
               {settings.whatsapp && (
                 <a
-                  href={whatsappLink(settings.whatsapp, `Hello Kanziy, my order reference is ${order.ref}.`)}
+                  href={whatsappLink(settings.whatsapp, whatsappMessage)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-navy w-full"
