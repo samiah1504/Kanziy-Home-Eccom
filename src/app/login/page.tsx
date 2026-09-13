@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useFormState, useFormStatus } from 'react-dom';
+import PasswordInput from '@/components/PasswordInput';
 import { login } from './actions';
 
 function SubmitButton() {
@@ -30,7 +31,7 @@ export default function LoginPage() {
           </div>
           <div>
             <label className="label" htmlFor="password">Password</label>
-            <input className="input" id="password" name="password" type="password" required autoComplete="current-password" />
+            <PasswordInput id="password" autoComplete="current-password" />
           </div>
           {state?.error && (
             <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>

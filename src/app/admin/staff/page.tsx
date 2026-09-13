@@ -1,5 +1,6 @@
 import { requireRole } from '@/lib/auth';
 import { db } from '@/lib/db';
+import PasswordInput from '@/components/PasswordInput';
 import { createStaff, resetStaffPassword, setStaffPageAccess, toggleStaffActive } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +33,7 @@ export default async function StaffPage() {
         <form action={createStaff} className="grid gap-3 md:grid-cols-5">
           <input className="input" name="name" placeholder="Full name" required />
           <input className="input" name="email" type="email" placeholder="Email" required />
-          <input className="input" name="password" type="password" placeholder="Password (min 8 chars)" required minLength={8} />
+          <PasswordInput placeholder="Password (min 8 chars)" minLength={8} />
           <select className="input" name="role" defaultValue="SUPPORT">
             <option value="SUPPORT">Customer Support</option>
             <option value="CONTENT_ADMIN">Technical / Content Admin</option>
@@ -69,15 +70,7 @@ export default async function StaffPage() {
               <form action={resetStaffPassword.bind(null, u.id)} className="mt-4 border-t border-gray-100 pt-4">
                 <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gold">Change Password</p>
                 <div className="flex max-w-md gap-2">
-                  <input
-                    className="input"
-                    type="password"
-                    name="password"
-                    placeholder="New password (min 8 characters)"
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                  />
+                  <PasswordInput placeholder="New password (min 8 characters)" minLength={8} />
                   <button type="submit" className="btn-navy whitespace-nowrap py-2 text-xs">Set Password</button>
                 </div>
               </form>
