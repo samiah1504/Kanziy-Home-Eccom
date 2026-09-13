@@ -6,7 +6,7 @@ import OrderForm from '../OrderForm';
 import StickyCTA from '../StickyCTA';
 import {
   ContactButtons, DeliveryPhotos, FaqSection, HowItWorks,
-  SellingPoints, SpecsSection, Testimonials, TrustBadges, VideoBlock,
+  SellingPoints, SpecsSection, Testimonials, TrustBadges, VideosBlock,
 } from '../sections';
 import { formatNaira } from '@/lib/utils';
 import type { SalesPageView } from '../types';
@@ -39,10 +39,10 @@ export default function TemplateBold({ view }: { view: SalesPageView }) {
         </div>
       </section>
 
-      {(view.deliveryPhotos.length > 0 || view.testimonials.length > 0) && (
+      {(view.deliveryPhotos.length > 0 || view.deliveryVideos.length > 0 || view.testimonials.length > 0) && (
         <section className="mx-auto max-w-6xl space-y-10 px-4 py-12">
           <h2 className="text-center text-2xl font-extrabold text-navy">See Kanziy Furniture in Real Spaces</h2>
-          <DeliveryPhotos photos={view.deliveryPhotos} title="" />
+          <DeliveryPhotos photos={view.deliveryPhotos} videos={view.deliveryVideos} title="" />
           <Testimonials items={view.testimonials} />
         </section>
       )}
@@ -52,9 +52,7 @@ export default function TemplateBold({ view }: { view: SalesPageView }) {
           <h2 className="mb-6 text-2xl font-extrabold text-navy">Why Customers Choose This {product.name}</h2>
           <SellingPoints points={view.sellingPoints} />
           <div className="mt-8"><SpecsSection product={product} /></div>
-          {product.videoUrl && (
-            <div className="mt-8"><VideoBlock url={product.videoUrl} title={product.name} /></div>
-          )}
+          <div className="mt-8"><VideosBlock videos={product.videos} title={product.name} /></div>
         </div>
       </section>
 
@@ -68,7 +66,7 @@ export default function TemplateBold({ view }: { view: SalesPageView }) {
           <h2 className="mb-2 text-center text-2xl font-extrabold text-white">Get Your {product.name} Now</h2>
           <p className="mb-8 text-center text-sm text-white/70">No payment until it is delivered, installed and inspected.</p>
           <div className="rounded-lg bg-white p-6">
-            <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} />
+            <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} colorVariants={product.colorVariants} />
           </div>
         </div>
       </section>

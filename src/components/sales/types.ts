@@ -11,6 +11,8 @@ export type Testimonial = {
 
 export type Faq = { q: string; a: string };
 export type Spec = { label: string; value: string };
+export type MediaVideo = { url: string; poster?: string };
+export type ColorVariant = { name: string; image?: string };
 
 export type SalesPageView = {
   page: {
@@ -33,14 +35,16 @@ export type SalesPageView = {
     dimensions?: string;
     materials?: string;
     colors: string[];
+    colorVariants: ColorVariant[];
     deliveryInfo?: string;
     installationInfo?: string;
     images: string[];
-    videoUrl?: string;
+    videos: MediaVideo[];
   };
   sellingPoints: string[];
   testimonials: Testimonial[];
   deliveryPhotos: string[];
+  deliveryVideos: MediaVideo[];
   faqs: Faq[];
   contact: { phone: string; whatsapp: string };
 };

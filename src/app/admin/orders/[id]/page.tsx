@@ -58,6 +58,7 @@ export default async function OrderDetailPage({
   const opsText = [
     `KANZIY ORDER — ${order.ref}`,
     `Product: ${order.productName}`,
+    order.selectedColor ? `Colour: ${order.selectedColor}` : null,
     `Quantity: ${order.quantity}`,
     `Unit Price: ${formatNaira(order.unitPrice)}`,
     `Order Value: ${formatNaira(order.totalValue)}`,
@@ -116,6 +117,12 @@ export default async function OrderDetailPage({
               <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-gold">Order</h2>
               <dl className="space-y-1.5 text-sm">
                 <div><dt className="inline text-gray-500">Product: </dt><dd className="inline font-semibold text-navy">{order.productName}</dd></div>
+                {order.selectedColor && (
+                  <div>
+                    <dt className="inline text-gray-500">Selected colour: </dt>
+                    <dd className="inline rounded bg-gold/15 px-2 py-0.5 font-semibold text-navy">{order.selectedColor}</dd>
+                  </div>
+                )}
                 <div><dt className="inline text-gray-500">Quantity: </dt><dd className="inline">{order.quantity}</dd></div>
                 <div><dt className="inline text-gray-500">Unit price: </dt><dd className="inline">{formatNaira(order.unitPrice)}</dd></div>
                 <div><dt className="inline text-gray-500">Total: </dt><dd className="inline text-lg font-bold text-navy">{formatNaira(order.totalValue)}</dd></div>

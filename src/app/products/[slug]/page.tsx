@@ -4,7 +4,9 @@ import type { Metadata } from 'next';
 import { db } from '@/lib/db';
 import { getSettings } from '@/lib/settings';
 import { parseJsonArray } from '@/lib/utils';
-import type { Faq, SalesPageView, Spec, Testimonial } from '@/components/sales/types';
+import type {
+  ColorVariant, Faq, MediaVideo, SalesPageView, Spec, Testimonial,
+} from '@/components/sales/types';
 import MetaPixel from '@/components/tracking/MetaPixel';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
@@ -87,10 +89,20 @@ export default async function SalesPage({
       dimensions: p.dimensions || undefined,
       materials: p.materials || undefined,
       colors: parseJsonArray<string>(p.colors),
+      colorVariants: (() => {
+        const variants = parseJsonArray<ColorVariant>(p.colorVariants).filter((v) => v?.name);
+        // Legacy fallback: names-only colour list becomes image-less variants.
+        return variants.length
+          ? variants
+          : parseJsonArray<string>(p.colors).map((name) => ({ name }));
+      })(),
       deliveryInfo: p.deliveryInfo || undefined,
       installationInfo: p.installationInfo || undefined,
       images: parseJsonArray<string>(p.images),
-      videoUrl: p.videoUrl || undefined,
+      videos: (() => {
+        const videos = parseJsonArray<MediaVideo>(p.videos).filter((v) => v?.url);
+        return videos.length ? videos : p.videoUrl ? [{ url: p.videoUrl }] : [];
+      })(),
     },
     sellingPoints: (() => {
       const points = parseJsonArray<string>(page.sellingPoints);
@@ -98,6 +110,7 @@ export default async function SalesPage({
     })(),
     testimonials: parseJsonArray<Testimonial>(page.testimonials),
     deliveryPhotos: parseJsonArray<string>(page.deliveryPhotos),
+    deliveryVideos: parseJsonArray<MediaVideo>(page.deliveryVideos).filter((v) => v?.url),
     faqs: parseJsonArray<Faq>(page.faqs),
     contact: { phone: settings.phone, whatsapp: settings.whatsapp },
   };

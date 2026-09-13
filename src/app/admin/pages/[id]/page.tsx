@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { parseJsonArray, TEMPLATES } from '@/lib/utils';
 import type { Faq, Testimonial } from '@/components/sales/types';
+import MediaUploader, { type MediaItem } from '@/components/admin/MediaUploader';
 import { updateSalesPage } from '../actions';
 
 export const dynamic = 'force-dynamic';
@@ -91,12 +92,25 @@ export default async function EditSalesPagePage({
           </div>
         </div>
 
-        <div className="admin-card space-y-4">
+        <div className="admin-card space-y-5">
           <h2 className="text-xs font-bold uppercase tracking-wide text-gold">Social Proof</h2>
-          <div>
-            <label className="label">Previous Delivery Photo URLs (one per line)</label>
-            <textarea className="input font-mono text-xs" name="deliveryPhotos" rows={4} defaultValue={parseJsonArray<string>(page.deliveryPhotos).join('\n')} />
-          </div>
+          <MediaUploader
+            name="deliveryPhotosJson"
+            label="Previous Delivery Photos"
+            kind="image"
+            multiple
+            defaultValue={parseJsonArray<string>(page.deliveryPhotos).map((url) => ({ url }))}
+            hint="Real Kanziy deliveries and installations — upload straight from your device."
+          />
+          <MediaUploader
+            name="deliveryVideosJson"
+            label="Previous Delivery / Project Videos"
+            kind="video"
+            multiple
+            withPoster
+            defaultValue={parseJsonArray<MediaItem>(page.deliveryVideos).filter((v) => v?.url)}
+            hint="Customer delivery and installation videos, shown in the social-proof section."
+          />
           <div>
             <label className="label">Testimonials (Name | Location | Rating 1–5 | Text — one per line)</label>
             <textarea className="input" name="testimonials" rows={4} defaultValue={testimonials} placeholder="Mrs Adebayo | Lagos | 5 | Excellent chair, delivered and installed the same week." />

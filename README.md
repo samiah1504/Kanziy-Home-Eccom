@@ -103,6 +103,15 @@ Staff portal: `/login` → `/admin`.
 | `AUTH_SECRET` | Session-cookie signing key (`openssl rand -hex 32`) |
 | `META_PIXEL_ID`, `META_CAPI_ACCESS_TOKEN`, `META_TEST_EVENT_CODE` | Meta tracking (Admin → Settings overrides these) |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO/sitemap |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Enables direct image/video uploads from the admin (Supabase Storage `media` bucket — created by the setup/migration SQL). Without them, media can still be added by URL. |
+
+**Media & colour variants**: products support direct image/video uploads
+(browser → Supabase Storage via signed URLs, so large videos bypass Vercel's
+request limits; images are downscaled client-side before upload), colour
+variants with per-colour images that customers select at order time (saved
+on the order for Customer Support), and separate delivery/project videos per
+sales page. Existing URL-based media keeps working; `migration-media-and-colours.sql`
+upgrades a pre-existing database.
 
 Until a Pixel ID + CAPI token are configured, server events are recorded as
 **SKIPPED** on each order (with a retry button) instead of being silently

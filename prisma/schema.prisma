@@ -57,11 +57,13 @@ model Product {
   specifications   String? // JSON {label,value}[]
   dimensions       String?
   materials        String?
-  colors           String? // JSON string[]
+  colors           String? // JSON string[] — legacy names-only list (kept in sync for compat)
+  colorVariants    String? // JSON {name, image?}[] — colours with their own images
   deliveryInfo     String?
   installationInfo String?
   images           String? // JSON string[] of URLs (first = main image)
-  videoUrl         String?
+  videoUrl         String? // legacy single video URL (merged into videos on read)
+  videos           String? // JSON {url, poster?}[] — product videos
   featured         Boolean    @default(false)
   onHomepage       Boolean    @default(false)
   bestSeller       Boolean    @default(false)
@@ -92,6 +94,7 @@ model SalesPage {
   sellingPoints  String? // JSON string[]
   testimonials   String? // JSON {name, location?, text, rating?}[]
   deliveryPhotos String? // JSON string[] of URLs (previous deliveries / installs)
+  deliveryVideos String? // JSON {url, poster?}[] — previous delivery/project videos
   faqs           String? // JSON {q, a}[]
   ctaText        String? // e.g. "ORDER NOW"
   views          Int               @default(0)
@@ -120,13 +123,14 @@ model Order {
   totalValue  Int
 
   // customer
-  customerName String
-  phone        String
-  whatsapp     String?
-  address      String
-  state        String
-  city         String?
-  customerNote String?
+  customerName  String
+  phone         String
+  whatsapp      String?
+  address       String
+  state         String
+  city          String?
+  customerNote  String?
+  selectedColor String? // colour/variant the customer chose on the sales page
 
   // workflow
   status        String    @default("NEW")

@@ -101,7 +101,10 @@ export default async function OrdersPage({
                 </td>
                 <td className="px-4 py-3">{o.customerName}</td>
                 <td className="px-4 py-3">{o.phone}</td>
-                <td className="px-4 py-3">{o.productName} × {o.quantity}</td>
+                <td className="px-4 py-3">
+                  {o.productName}
+                  {o.selectedColor ? <span className="text-gold"> — {o.selectedColor}</span> : ''} × {o.quantity}
+                </td>
                 <td className="px-4 py-3 font-medium">{formatNaira(o.totalValue)}</td>
                 <td className="px-4 py-3 capitalize text-gray-600">{o.trafficSource ?? '—'}</td>
                 <td className="px-4 py-3">

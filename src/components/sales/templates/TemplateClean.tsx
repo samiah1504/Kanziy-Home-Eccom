@@ -5,7 +5,7 @@ import OrderForm from '../OrderForm';
 import StickyCTA from '../StickyCTA';
 import {
   ContactButtons, DeliveryPhotos, FaqSection, HowItWorks,
-  SellingPoints, SpecsSection, Testimonials, TrustBadges, VideoBlock,
+  SellingPoints, SpecsSection, Testimonials, TrustBadges, VideosBlock,
 } from '../sections';
 import { formatNaira } from '@/lib/utils';
 import type { SalesPageView } from '../types';
@@ -41,15 +41,13 @@ export default function TemplateClean({ view }: { view: SalesPageView }) {
       <section className="mx-auto max-w-4xl px-4 py-12">
         <h2 className="mb-6 text-2xl font-bold text-navy">Product Details</h2>
         <SpecsSection product={product} />
-        {product.videoUrl && (
-          <div className="mt-8"><VideoBlock url={product.videoUrl} title={product.name} /></div>
-        )}
+        <div className="mt-8"><VideosBlock videos={product.videos} title={product.name} /></div>
       </section>
 
-      {(view.deliveryPhotos.length > 0 || view.testimonials.length > 0) && (
+      {(view.deliveryPhotos.length > 0 || view.deliveryVideos.length > 0 || view.testimonials.length > 0) && (
         <section className="bg-warmgrey">
           <div className="mx-auto max-w-6xl space-y-10 px-4 py-12">
-            <DeliveryPhotos photos={view.deliveryPhotos} />
+            <DeliveryPhotos photos={view.deliveryPhotos} videos={view.deliveryVideos} />
             <Testimonials items={view.testimonials} />
           </div>
         </section>
@@ -74,7 +72,7 @@ export default function TemplateClean({ view }: { view: SalesPageView }) {
             Fill in your details — our team will call to confirm before delivery.
           </p>
           <div className="rounded-lg bg-white p-6">
-            <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} />
+            <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} colorVariants={product.colorVariants} />
           </div>
         </div>
       </section>

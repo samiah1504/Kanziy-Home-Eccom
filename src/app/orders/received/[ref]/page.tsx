@@ -42,6 +42,12 @@ export default async function OrderReceivedPage({
                   <dt className="text-gray-600">Product</dt>
                   <dd className="font-semibold text-navy">{order.productName}</dd>
                 </div>
+                {order.selectedColor && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600">Colour</dt>
+                    <dd className="font-semibold text-navy">{order.selectedColor}</dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt className="text-gray-600">Quantity</dt>
                   <dd className="font-semibold text-navy">{order.quantity}</dd>

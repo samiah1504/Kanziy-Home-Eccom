@@ -6,7 +6,7 @@ import OrderForm from '../OrderForm';
 import StickyCTA from '../StickyCTA';
 import {
   ContactButtons, DeliveryPhotos, FaqSection, HowItWorks,
-  SellingPoints, SpecsSection, Testimonials, TrustBadges, VideoBlock,
+  SellingPoints, SpecsSection, Testimonials, TrustBadges, VideosBlock,
 } from '../sections';
 import { formatNaira } from '@/lib/utils';
 import type { SalesPageView } from '../types';
@@ -35,23 +35,21 @@ export default function TemplateDirect({ view }: { view: SalesPageView }) {
         <div className="rounded-lg border-2 border-gold bg-white p-5">
           <h2 className="mb-1 text-center text-xl font-extrabold text-navy">Order Now — Pay on Delivery</h2>
           <p className="mb-5 text-center text-xs text-gray-500">Our team calls to confirm every order before delivery.</p>
-          <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} />
+          <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} colorVariants={product.colorVariants} />
         </div>
       </section>
 
-      {(view.deliveryPhotos.length > 0 || view.testimonials.length > 0) && (
+      {(view.deliveryPhotos.length > 0 || view.deliveryVideos.length > 0 || view.testimonials.length > 0) && (
         <section className="bg-cream">
           <div className="mx-auto max-w-xl space-y-8 px-4 py-8">
-            <DeliveryPhotos photos={view.deliveryPhotos} />
+            <DeliveryPhotos photos={view.deliveryPhotos} videos={view.deliveryVideos} />
             <Testimonials items={view.testimonials} />
           </div>
         </section>
       )}
 
       <section className="mx-auto max-w-xl px-4 py-8">
-        {product.videoUrl && (
-          <div className="mb-8"><VideoBlock url={product.videoUrl} title={product.name} /></div>
-        )}
+        <div className="mb-8"><VideosBlock videos={product.videos} title={product.name} /></div>
         <h2 className="mb-4 text-xl font-extrabold text-navy">Details & Specifications</h2>
         <SpecsSection product={product} />
       </section>

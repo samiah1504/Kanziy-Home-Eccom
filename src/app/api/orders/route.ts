@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     city,
     quantity,
     customerNote,
+    selectedColor,
     attribution = {},
   } = body ?? {};
 
@@ -101,6 +102,10 @@ export async function POST(req: NextRequest) {
           state: state.trim().slice(0, 100),
           city: str(city),
           customerNote: str(customerNote),
+          selectedColor:
+            typeof selectedColor === 'string' && selectedColor.trim()
+              ? selectedColor.trim().slice(0, 100)
+              : undefined,
           trafficSource: deriveTrafficSource({ ...attr }),
           ...attr,
           userAgent,

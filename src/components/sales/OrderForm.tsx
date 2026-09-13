@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAttribution } from '@/components/tracking/attribution';
 import { formatNaira } from '@/lib/utils';
+import type { ColorVariant } from './types';
 
 const NIGERIAN_STATES = [
   'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue',
@@ -18,20 +19,27 @@ export default function OrderForm({
   productName,
   price,
   ctaText = 'Place My Order',
+  colorVariants = [],
 }: {
   salesPageId: string;
   productName: string;
   price: number;
   ctaText?: string;
+  colorVariants?: ColorVariant[];
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    if (colorVariants.length > 0 && !selectedColor) {
+      setError('Please select your preferred colour above.');
+      return;
+    }
     setSubmitting(true);
     const form = new FormData(e.currentTarget);
     try {
@@ -48,6 +56,7 @@ export default function OrderForm({
           city: form.get('city'),
           quantity: form.get('quantity'),
           customerNote: form.get('customerNote'),
+          selectedColor,
           attribution: getAttribution(),
         }),
       });
@@ -66,6 +75,38 @@ export default function OrderForm({
 
   return (
     <form id="order-form" onSubmit={handleSubmit} className="space-y-4">
+      {colorVariants.length > 0 && (
+        <fieldset>
+          <legend className="label">Choose Your Colour *</legend>
+          <div className="flex flex-wrap gap-2">
+            {colorVariants.map((v) => {
+              const active = selectedColor === v.name;
+              return (
+                <button
+                  key={v.name}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setSelectedColor(v.name)}
+                  className={`flex items-center gap-2 rounded-md border-2 px-2 py-1.5 text-sm font-medium transition ${
+                    active
+                      ? 'border-gold bg-gold/10 text-navy'
+                      : 'border-gray-200 bg-white text-charcoal hover:border-gold/50'
+                  }`}
+                >
+                  {v.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={v.image} alt="" className="h-9 w-9 rounded object-cover" />
+                  ) : (
+                    <span className="flex h-9 w-9 items-center justify-center rounded bg-cream text-gold" aria-hidden>◆</span>
+                  )}
+                  {v.name}
+                  {active && <span className="text-gold" aria-hidden>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
       <div>
         <label className="label" htmlFor="customerName">Full Name *</label>
         <input className="input" id="customerName" name="customerName" required autoComplete="name" placeholder="Your full name" />
@@ -118,7 +159,10 @@ export default function OrderForm({
       </div>
 
       <div className="flex items-center justify-between rounded-md bg-cream px-4 py-3 text-sm">
-        <span className="font-medium text-navy">{productName} × {quantity}</span>
+        <span className="font-medium text-navy">
+          {productName}
+          {selectedColor ? ` — ${selectedColor}` : ''} × {quantity}
+        </span>
         <span className="text-lg font-bold text-navy">{formatNaira(price * quantity)}</span>
       </div>
 

@@ -2,7 +2,7 @@
 // differ in layout, colour rhythm and typography, never in content support.
 
 import { whatsappLink } from '@/lib/settings';
-import type { SalesPageView, Testimonial, Faq, Spec } from './types';
+import type { SalesPageView, Testimonial, Faq, Spec, MediaVideo } from './types';
 
 export function TrustBadges({ items, dark = false }: { items?: string[]; dark?: boolean }) {
   const badges = items?.length
@@ -39,7 +39,15 @@ export function SellingPoints({ points }: { points: string[] }) {
   );
 }
 
-export function VideoBlock({ url, title }: { url?: string; title: string }) {
+export function VideoBlock({
+  url,
+  poster,
+  title,
+}: {
+  url?: string;
+  poster?: string;
+  title: string;
+}) {
   if (!url) return null;
   const isEmbed = url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
   return (
@@ -54,9 +62,45 @@ export function VideoBlock({ url, title }: { url?: string; title: string }) {
           loading="lazy"
         />
       ) : (
-        // Never autoplay with sound — user presses play.
-        <video src={url} controls preload="metadata" className="aspect-video w-full bg-black" />
+        // Never autoplay with sound — user presses play. preload="metadata"
+        // keeps uploaded videos from slowing the page down.
+        <video src={url} poster={poster} controls preload="metadata" playsInline className="aspect-video w-full bg-black" />
       )}
+    </div>
+  );
+}
+
+/** Renders every product video — all templates support multiple videos. */
+export function VideosBlock({ videos, title }: { videos: MediaVideo[]; title: string }) {
+  if (videos.length === 0) return null;
+  return (
+    <div className="space-y-4">
+      {videos.map((v, i) => (
+        <VideoBlock key={i} url={v.url} poster={v.poster} title={title} />
+      ))}
+    </div>
+  );
+}
+
+/** Available colours with their images — shown on every template. */
+export function ColorShowcase({ variants }: { variants: SalesPageView['product']['colorVariants'] }) {
+  if (variants.length === 0) return null;
+  return (
+    <div>
+      <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-navy">Available Colours</h3>
+      <div className="flex flex-wrap gap-3">
+        {variants.map((v) => (
+          <figure key={v.name} className="w-20 text-center">
+            {v.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={v.image} alt={`${v.name} colour`} className="mx-auto aspect-square w-full rounded-md border border-gray-200 object-cover" loading="lazy" />
+            ) : (
+              <span className="mx-auto flex aspect-square w-full items-center justify-center rounded-md border border-gray-200 bg-cream text-lg text-gold" aria-hidden>◆</span>
+            )}
+            <figcaption className="mt-1 text-xs font-medium text-charcoal">{v.name}</figcaption>
+          </figure>
+        ))}
+      </div>
     </div>
   );
 }
@@ -94,23 +138,48 @@ export function HowItWorks({ dark = false }: { dark?: boolean }) {
   );
 }
 
-export function DeliveryPhotos({ photos, title = 'Delivered & Installed by Kanziy' }: { photos: string[]; title?: string }) {
-  if (photos.length === 0) return null;
+export function DeliveryPhotos({
+  photos,
+  videos = [],
+  title = 'Delivered & Installed by Kanziy',
+}: {
+  photos: string[];
+  videos?: MediaVideo[];
+  title?: string;
+}) {
+  if (photos.length === 0 && videos.length === 0) return null;
   return (
     <div>
-      <h3 className="mb-4 text-xl font-bold text-navy">{title}</h3>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        {photos.map((src, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={i}
-            src={src}
-            alt="Kanziy delivery"
-            className="aspect-square w-full rounded-md object-cover"
-            loading="lazy"
-          />
-        ))}
-      </div>
+      {title && <h3 className="mb-4 text-xl font-bold text-navy">{title}</h3>}
+      {photos.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {photos.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={i}
+              src={src}
+              alt="Kanziy delivery"
+              className="aspect-square w-full rounded-md object-cover"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      )}
+      {videos.length > 0 && (
+        <div className={`grid gap-3 md:grid-cols-2 ${photos.length > 0 ? 'mt-3' : ''}`}>
+          {videos.map((v, i) => (
+            <video
+              key={i}
+              src={v.url}
+              poster={v.poster}
+              controls
+              preload="metadata"
+              playsInline
+              className="aspect-video w-full rounded-md bg-black object-cover"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -143,14 +212,14 @@ export function SpecsSection({ product }: { product: SalesPageView['product'] })
     ...product.specifications,
     ...(product.dimensions ? [{ label: 'Dimensions', value: product.dimensions }] : []),
     ...(product.materials ? [{ label: 'Materials', value: product.materials }] : []),
-    ...(product.colors.length ? [{ label: 'Available Colours', value: product.colors.join(', ') }] : []),
   ];
-  if (rows.length === 0 && !product.description) return null;
+  if (rows.length === 0 && !product.description && product.colorVariants.length === 0) return null;
   return (
     <div className="space-y-4">
       {product.description && (
         <p className="whitespace-pre-line text-sm leading-relaxed text-charcoal">{product.description}</p>
       )}
+      <ColorShowcase variants={product.colorVariants} />
       {rows.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

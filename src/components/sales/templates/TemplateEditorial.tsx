@@ -6,7 +6,7 @@ import OrderForm from '../OrderForm';
 import StickyCTA from '../StickyCTA';
 import {
   ContactButtons, DeliveryPhotos, FaqSection, HowItWorks,
-  SellingPoints, SpecsSection, Testimonials, VideoBlock,
+  SellingPoints, SpecsSection, Testimonials, VideosBlock,
 } from '../sections';
 import { formatNaira } from '@/lib/utils';
 import type { SalesPageView } from '../types';
@@ -46,19 +46,17 @@ export default function TemplateEditorial({ view }: { view: SalesPageView }) {
             <div className="mt-8"><SpecsSection product={product} /></div>
           </div>
         </div>
-        {product.videoUrl && (
-          <div className="mt-12"><VideoBlock url={product.videoUrl} title={product.name} /></div>
-        )}
+        <div className="mt-12"><VideosBlock videos={product.videos} title={product.name} /></div>
       </section>
 
-      {(view.deliveryPhotos.length > 0 || view.testimonials.length > 0) && (
+      {(view.deliveryPhotos.length > 0 || view.deliveryVideos.length > 0 || view.testimonials.length > 0) && (
         <section className="bg-white">
           <div className="mx-auto max-w-5xl space-y-10 px-4 py-14">
             <div className="text-center">
               <h2 className="font-serif text-3xl text-navy">Delivered & Installed by Kanziy</h2>
               <div className="mx-auto mt-4 h-px w-16 bg-gold" />
             </div>
-            <DeliveryPhotos photos={view.deliveryPhotos} title="" />
+            <DeliveryPhotos photos={view.deliveryPhotos} videos={view.deliveryVideos} title="" />
             <Testimonials items={view.testimonials} />
           </div>
         </section>
@@ -83,7 +81,7 @@ export default function TemplateEditorial({ view }: { view: SalesPageView }) {
           <h2 className="mb-2 text-center font-serif text-3xl text-white">Reserve Your {product.name}</h2>
           <p className="mb-8 text-center text-sm text-white/70">Pay only after delivery, installation and your inspection.</p>
           <div className="rounded-lg bg-white p-6">
-            <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} />
+            <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} colorVariants={product.colorVariants} />
           </div>
           <div className="mt-8">
             <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} variant="dark" />

@@ -44,10 +44,12 @@ CREATE TABLE "Product" (
     "dimensions" TEXT,
     "materials" TEXT,
     "colors" TEXT,
+    "colorVariants" TEXT,
     "deliveryInfo" TEXT,
     "installationInfo" TEXT,
     "images" TEXT,
     "videoUrl" TEXT,
+    "videos" TEXT,
     "featured" BOOLEAN NOT NULL DEFAULT false,
     "onHomepage" BOOLEAN NOT NULL DEFAULT false,
     "bestSeller" BOOLEAN NOT NULL DEFAULT false,
@@ -72,6 +74,7 @@ CREATE TABLE "SalesPage" (
     "sellingPoints" TEXT,
     "testimonials" TEXT,
     "deliveryPhotos" TEXT,
+    "deliveryVideos" TEXT,
     "faqs" TEXT,
     "ctaText" TEXT,
     "views" INTEGER NOT NULL DEFAULT 0,
@@ -98,6 +101,7 @@ CREATE TABLE "Order" (
     "state" TEXT NOT NULL,
     "city" TEXT,
     "customerNote" TEXT,
+    "selectedColor" TEXT,
     "status" TEXT NOT NULL DEFAULT 'NEW',
     "confirmedById" TEXT,
     "confirmedAt" TIMESTAMP(3),
@@ -322,3 +326,25 @@ INSERT INTO "StaffPageAccess" ("id", "userId", "salesPageId") VALUES
 ('access-support-desk',        'user-support', 'page-executive-desk'),
 ('access-support-workstation', 'user-support', 'page-office-workstation')
 ON CONFLICT ("id") DO NOTHING;
+
+
+-- ════════════════════════════════════════════════════════════════════
+-- PART 3 — MEDIA STORAGE BUCKET (for direct image/video uploads)
+-- ════════════════════════════════════════════════════════════════════
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT FROM information_schema.tables
+    WHERE table_schema = 'storage' AND table_name = 'buckets'
+  ) THEN
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'media', 'media', true, 209715200,
+      ARRAY['image/jpeg','image/png','image/webp','image/gif','video/mp4','video/webm','video/quicktime']
+    )
+    ON CONFLICT (id) DO UPDATE
+      SET public = true,
+          file_size_limit = EXCLUDED.file_size_limit,
+          allowed_mime_types = EXCLUDED.allowed_mime_types;
+  END IF;
+END $$;

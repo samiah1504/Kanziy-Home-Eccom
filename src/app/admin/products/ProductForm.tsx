@@ -3,6 +3,8 @@
 
 import { parseJsonArray } from '@/lib/utils';
 import type { Product } from '@prisma/client';
+import MediaUploader, { type MediaItem } from '@/components/admin/MediaUploader';
+import ColorVariantsEditor, { type ColorVariant } from '@/components/admin/ColorVariantsEditor';
 
 function joinLines(json: string | null | undefined) {
   return parseJsonArray<string>(json).join('\n');
@@ -12,6 +14,22 @@ function joinSpecs(json: string | null | undefined) {
   return parseJsonArray<{ label: string; value: string }>(json)
     .map((s) => `${s.label}: ${s.value}`)
     .join('\n');
+}
+
+// New videos list, with the legacy single videoUrl folded in.
+function productVideos(product?: Product): MediaItem[] {
+  const videos = parseJsonArray<MediaItem>(product?.videos).filter((v) => v?.url);
+  if (videos.length === 0 && product?.videoUrl) return [{ url: product.videoUrl }];
+  return videos;
+}
+
+// Colour variants, falling back to the legacy names-only colours list.
+function colorVariants(product?: Product): ColorVariant[] {
+  const variants = parseJsonArray<ColorVariant>(product?.colorVariants).filter((v) => v?.name);
+  if (variants.length === 0) {
+    return parseJsonArray<string>(product?.colors).map((name) => ({ name }));
+  }
+  return variants;
 }
 
 export default function ProductForm({
@@ -55,16 +73,26 @@ export default function ProductForm({
         </div>
       </div>
 
-      <div className="admin-card space-y-4">
+      <div className="admin-card space-y-5">
         <h2 className="text-xs font-bold uppercase tracking-wide text-gold">Media</h2>
-        <div>
-          <label className="label">Image URLs (one per line, first = main image)</label>
-          <textarea className="input font-mono text-xs" name="images" rows={4} defaultValue={joinLines(product?.images)} placeholder="https://…/chair-front.jpg" />
-        </div>
-        <div>
-          <label className="label">Video URL (YouTube, Vimeo or direct MP4)</label>
-          <input className="input" name="videoUrl" defaultValue={product?.videoUrl ?? ''} />
-        </div>
+        <MediaUploader
+          name="imagesJson"
+          label="Product Images"
+          kind="image"
+          multiple
+          mainBadge
+          defaultValue={parseJsonArray<string>(product?.images).map((url) => ({ url }))}
+          hint="Upload straight from your device. The first image is the main product image — use “Make main” or the arrows to reorder."
+        />
+        <MediaUploader
+          name="videosJson"
+          label="Product Videos"
+          kind="video"
+          multiple
+          withPoster
+          defaultValue={productVideos(product)}
+          hint="MP4/WebM/MOV up to 200MB. Add a poster image so the video shows a preview before playing. YouTube/Vimeo links also work via “paste a URL”."
+        />
       </div>
 
       <div className="admin-card space-y-4">
@@ -86,11 +114,8 @@ export default function ProductForm({
             <label className="label">Materials</label>
             <input className="input" name="materials" defaultValue={product?.materials ?? ''} placeholder="Genuine leather, chrome base" />
           </div>
-          <div>
-            <label className="label">Colours (comma separated)</label>
-            <input className="input" name="colors" defaultValue={parseJsonArray<string>(product?.colors).join(', ')} placeholder="Black, Brown, White" />
-          </div>
         </div>
+        <ColorVariantsEditor name="colorVariantsJson" defaultValue={colorVariants(product)} />
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className="label">Delivery Information</label>

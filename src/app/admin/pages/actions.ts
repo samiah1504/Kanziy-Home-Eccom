@@ -12,6 +12,41 @@ function lines(value: FormDataEntryValue | null): string {
   );
 }
 
+function urlList(value: FormDataEntryValue | null): string {
+  try {
+    const parsed = JSON.parse(String(value || '[]'));
+    if (!Array.isArray(parsed)) return '[]';
+    return JSON.stringify(
+      parsed
+        .filter((v) => typeof v === 'string' && v.trim())
+        .slice(0, 50)
+        .map((v) => String(v).trim().slice(0, 1000))
+    );
+  } catch {
+    return '[]';
+  }
+}
+
+function mediaList(value: FormDataEntryValue | null): string {
+  try {
+    const parsed = JSON.parse(String(value || '[]'));
+    if (!Array.isArray(parsed)) return '[]';
+    return JSON.stringify(
+      parsed
+        .filter((v) => v && typeof v.url === 'string' && v.url.trim())
+        .slice(0, 50)
+        .map((v) => ({
+          url: String(v.url).trim().slice(0, 1000),
+          ...(typeof v.poster === 'string' && v.poster.trim()
+            ? { poster: v.poster.trim().slice(0, 1000) }
+            : {}),
+        }))
+    );
+  } catch {
+    return '[]';
+  }
+}
+
 // "Name | Location | Rating | Text" per line (location/rating optional).
 function testimonialLines(value: FormDataEntryValue | null): string {
   const items = String(value || '')
@@ -77,7 +112,8 @@ export async function updateSalesPage(id: string, formData: FormData) {
       ctaText: String(formData.get('ctaText') || '').trim() || null,
       sellingPoints: lines(formData.get('sellingPoints')),
       testimonials: testimonialLines(formData.get('testimonials')),
-      deliveryPhotos: lines(formData.get('deliveryPhotos')),
+      deliveryPhotos: urlList(formData.get('deliveryPhotosJson')),
+      deliveryVideos: mediaList(formData.get('deliveryVideosJson')),
       faqs: faqLines(formData.get('faqs')),
     },
   });
