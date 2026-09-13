@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { db } from '@/lib/db';
@@ -12,16 +13,21 @@ import TemplateBold from '@/components/sales/templates/TemplateBold';
 import TemplateEditorial from '@/components/sales/templates/TemplateEditorial';
 import TemplateDirect from '@/components/sales/templates/TemplateDirect';
 
-export const dynamic = 'force-dynamic';
+// Sales pages are ad destinations — cache them at the edge and regenerate at
+// most once per minute. Admin saves revalidate the path, so content edits and
+// template switches still go live immediately. The per-view tracking and the
+// order form are client-side/API calls, so they are unaffected by caching.
+export const revalidate = 60;
 
-async function loadPage(slug: string) {
+// cache() dedupes the query between generateMetadata and the page render.
+const loadPage = cache(async (slug: string) => {
   const page = await db.salesPage.findUnique({
     where: { slug },
     include: { product: true },
   });
   if (!page || page.status !== 'PUBLISHED' || !page.product.active) return null;
   return page;
-}
+});
 
 export async function generateMetadata({
   params,
@@ -53,9 +59,11 @@ export default async function SalesPage({
 }: {
   params: { slug: string };
 }) {
-  const page = await loadPage(params.slug);
+  const [page, settings] = await Promise.all([
+    loadPage(params.slug),
+    getSettings(),
+  ]);
   if (!page) notFound();
-  const settings = await getSettings();
   const p = page.product;
 
   const view: SalesPageView = {

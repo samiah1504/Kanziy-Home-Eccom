@@ -6,19 +6,23 @@ import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import MetaPixel from '@/components/tracking/MetaPixel';
 
-export const dynamic = 'force-dynamic';
+// Cached and served from the edge; regenerated at most once per minute.
+// Admin saves call revalidatePath('/'), so edits still appear immediately.
+export const revalidate = 60;
 
 export default async function HomePage() {
-  const settings = await getSettings();
-  const products = await db.product.findMany({
-    where: {
-      active: true,
-      onHomepage: true,
-      salesPage: { status: 'PUBLISHED' },
-    },
-    include: { salesPage: { select: { slug: true, deliveryPhotos: true } } },
-    orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
-  });
+  const [settings, products] = await Promise.all([
+    getSettings(),
+    db.product.findMany({
+      where: {
+        active: true,
+        onHomepage: true,
+        salesPage: { status: 'PUBLISHED' },
+      },
+      include: { salesPage: { select: { slug: true, deliveryPhotos: true } } },
+      orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
+    }),
+  ]);
 
   const featured = products.filter((p) => p.featured);
   const heroImage = featured[0]
