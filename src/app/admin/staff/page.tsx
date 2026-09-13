@@ -1,6 +1,6 @@
 import { requireRole } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { createStaff, setStaffPageAccess, toggleStaffActive } from './actions';
+import { createStaff, resetStaffPassword, setStaffPageAccess, toggleStaffActive } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,6 +65,22 @@ export default async function StaffPage() {
                   </form>
                 )}
               </div>
+
+              <form action={resetStaffPassword.bind(null, u.id)} className="mt-4 border-t border-gray-100 pt-4">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gold">Change Password</p>
+                <div className="flex max-w-md gap-2">
+                  <input
+                    className="input"
+                    type="password"
+                    name="password"
+                    placeholder="New password (min 8 characters)"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                  <button type="submit" className="btn-navy whitespace-nowrap py-2 text-xs">Set Password</button>
+                </div>
+              </form>
 
               {isSupport && (
                 <form action={setStaffPageAccess.bind(null, u.id)} className="mt-4 border-t border-gray-100 pt-4">

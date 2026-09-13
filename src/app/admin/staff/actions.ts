@@ -22,6 +22,20 @@ export async function createStaff(formData: FormData) {
   revalidatePath('/admin/staff');
 }
 
+/** Super Admin sets a new password for any staff account (their own included). */
+export async function resetStaffPassword(userId: string, formData: FormData) {
+  await requireRole('SUPER_ADMIN');
+  const password = String(formData.get('password') || '');
+  if (password.length < 8) {
+    throw new Error('Password must be at least 8 characters');
+  }
+  await db.user.update({
+    where: { id: userId },
+    data: { passwordHash: bcrypt.hashSync(password, 10) },
+  });
+  revalidatePath('/admin/staff');
+}
+
 export async function toggleStaffActive(userId: string) {
   const admin = await requireRole('SUPER_ADMIN');
   if (admin.id === userId) throw new Error('You cannot deactivate your own account');
