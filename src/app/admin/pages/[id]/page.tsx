@@ -99,6 +99,7 @@ export default async function EditSalesPagePage({
             label="Previous Delivery Photos"
             kind="image"
             multiple
+            watermark
             defaultValue={parseJsonArray<string>(page.deliveryPhotos).map((url) => ({ url }))}
             hint="Real Kanziy deliveries and installations — upload straight from your device."
           />
@@ -108,6 +109,7 @@ export default async function EditSalesPagePage({
             kind="video"
             multiple
             withPoster
+            watermark
             defaultValue={parseJsonArray<MediaItem>(page.deliveryVideos).filter((v) => v?.url)}
             hint="Customer delivery and installation videos, shown in the social-proof section."
           />

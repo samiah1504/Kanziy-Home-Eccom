@@ -8,6 +8,7 @@
 
 import { useRef, useState } from 'react';
 import { deleteUpload, requestUpload } from '@/app/admin/media/actions';
+import { applyWatermark } from './watermark';
 
 export type MediaItem = { url: string; poster?: string };
 
@@ -40,9 +41,11 @@ async function optimizeImage(file: File): Promise<File> {
 
 export async function uploadFile(
   file: File,
-  kind: 'image' | 'video'
+  kind: 'image' | 'video',
+  watermark = false
 ): Promise<{ url: string } | { error: string }> {
-  const prepared = kind === 'image' ? await optimizeImage(file) : file;
+  let prepared = kind === 'image' ? await optimizeImage(file) : file;
+  if (kind === 'image' && watermark) prepared = await applyWatermark(prepared);
   const ticket = await requestUpload({
     filename: prepared.name,
     contentType: prepared.type,
@@ -71,6 +74,7 @@ export default function MediaUploader({
   defaultValue,
   withPoster = false,
   mainBadge = false,
+  watermark = false,
   hint,
 }: {
   name: string; // hidden input name; value is JSON
@@ -80,6 +84,7 @@ export default function MediaUploader({
   defaultValue: MediaItem[];
   withPoster?: boolean; // videos: allow a poster image per item
   mainBadge?: boolean; // images: first item is the main image
+  watermark?: boolean; // stamp the KANZIY wordmark into uploaded photos
   hint?: string;
 }) {
   const [items, setItems] = useState<MediaItem[]>(defaultValue);
@@ -103,7 +108,7 @@ export default function MediaUploader({
     const list = Array.from(files);
     for (let i = 0; i < list.length; i++) {
       setBusy(`Uploading ${i + 1} of ${list.length}… (${list[i].name})`);
-      const result = await uploadFile(list[i], kind);
+      const result = await uploadFile(list[i], kind, watermark);
       if ('error' in result) {
         setError(result.error);
         break;
@@ -121,7 +126,7 @@ export default function MediaUploader({
     if (!files || files.length === 0 || idx < 0) return;
     setError(null);
     setBusy('Uploading poster image…');
-    const result = await uploadFile(files[0], 'image');
+    const result = await uploadFile(files[0], 'image', watermark);
     setBusy(null);
     if ('error' in result) {
       setError(result.error);

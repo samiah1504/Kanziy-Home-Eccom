@@ -81,6 +81,7 @@ export default function ProductForm({
           kind="image"
           multiple
           mainBadge
+          watermark
           defaultValue={parseJsonArray<string>(product?.images).map((url) => ({ url }))}
           hint="Upload straight from your device. The first image is the main product image — use “Make main” or the arrows to reorder."
         />
@@ -90,6 +91,7 @@ export default function ProductForm({
           kind="video"
           multiple
           withPoster
+          watermark
           defaultValue={productVideos(product)}
           hint="MP4/WebM/MOV up to 200MB. Add a poster image so the video shows a preview before playing. YouTube/Vimeo links also work via “paste a URL”."
         />

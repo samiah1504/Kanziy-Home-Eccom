@@ -51,7 +51,7 @@ export function VideoBlock({
   if (!url) return null;
   const isEmbed = url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
   return (
-    <div className="overflow-hidden rounded-lg">
+    <div className="relative overflow-hidden rounded-lg">
       {isEmbed ? (
         <iframe
           src={toEmbedUrl(url)}
@@ -66,7 +66,10 @@ export function VideoBlock({
         // keeps uploaded videos from slowing the page down. h-auto lets the
         // player take the video's own shape (square, landscape or portrait);
         // max-h keeps tall portrait clips from dominating the page.
-        <video src={url} poster={poster} controls controlsList="nodownload" disablePictureInPicture preload="metadata" playsInline className="h-auto max-h-[75vh] w-full bg-black" />
+        <>
+          <video src={url} poster={poster} controls controlsList="nodownload" disablePictureInPicture preload="metadata" playsInline className="h-auto max-h-[75vh] w-full bg-black" />
+          <span className="pointer-events-none absolute right-3 top-2 text-xs font-bold uppercase tracking-[0.25em] text-white/60 drop-shadow" aria-hidden>KANZIY</span>
+        </>
       )}
     </div>
   );
@@ -170,17 +173,19 @@ export function DeliveryPhotos({
       {videos.length > 0 && (
         <div className={`grid gap-3 md:grid-cols-2 ${photos.length > 0 ? 'mt-3' : ''}`}>
           {videos.map((v, i) => (
-            <video
-              key={i}
-              src={v.url}
-              poster={v.poster}
-              controls
-              controlsList="nodownload"
-              disablePictureInPicture
-              preload="metadata"
-              playsInline
-              className="h-auto max-h-[70vh] w-full rounded-md bg-black"
-            />
+            <div key={i} className="relative overflow-hidden rounded-md">
+              <video
+                src={v.url}
+                poster={v.poster}
+                controls
+                controlsList="nodownload"
+                disablePictureInPicture
+                preload="metadata"
+                playsInline
+                className="h-auto max-h-[70vh] w-full bg-black"
+              />
+              <span className="pointer-events-none absolute right-3 top-2 text-xs font-bold uppercase tracking-[0.25em] text-white/60 drop-shadow" aria-hidden>KANZIY</span>
+            </div>
           ))}
         </div>
       )}
