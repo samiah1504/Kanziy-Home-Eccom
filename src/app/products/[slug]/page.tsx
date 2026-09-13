@@ -9,6 +9,7 @@ import type {
 } from '@/components/sales/types';
 import MetaPixel from '@/components/tracking/MetaPixel';
 import SiteHeader from '@/components/site/SiteHeader';
+import MediaProtection from '@/components/site/MediaProtection';
 import SiteFooter from '@/components/site/SiteFooter';
 import TemplateClean from '@/components/sales/templates/TemplateClean';
 import TemplateBold from '@/components/sales/templates/TemplateBold';
@@ -155,6 +156,7 @@ export default async function SalesPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <MediaProtection />
       <SiteHeader phone={settings.phone} whatsapp={settings.whatsapp} />
       <main>
         <Template view={view} />

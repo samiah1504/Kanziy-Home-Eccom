@@ -11,6 +11,12 @@ body {
   @apply bg-white text-charcoal antialiased;
 }
 
+/* Deter casual saving: no iOS long-press save sheet on media. */
+img,
+video {
+  -webkit-touch-callout: none;
+}
+
 @layer components {
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 rounded-md bg-gold px-6 py-3 text-sm font-semibold uppercase tracking-wide text-navy transition hover:bg-gold-bright;

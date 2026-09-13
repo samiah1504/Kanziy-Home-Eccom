@@ -5,6 +5,7 @@ import { formatNaira, parseJsonArray } from '@/lib/utils';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import MetaPixel from '@/components/tracking/MetaPixel';
+import MediaProtection from '@/components/site/MediaProtection';
 
 // Cached and served from the edge; regenerated at most once per minute.
 // Admin saves call revalidatePath('/'), so edits still appear immediately.
@@ -42,6 +43,7 @@ export default async function HomePage() {
   return (
     <>
       <MetaPixel pixelId={settings.metaPixelId} />
+      <MediaProtection />
       <SiteHeader phone={settings.phone} whatsapp={settings.whatsapp} />
       <main>
         {/* Hero */}
