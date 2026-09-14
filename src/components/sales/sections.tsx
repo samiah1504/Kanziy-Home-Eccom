@@ -263,34 +263,64 @@ export function FaqSection({ faqs }: { faqs: Faq[] }) {
   );
 }
 
+/**
+ * Secondary contact line: "Have a question? Chat with us on WhatsApp".
+ * Deliberately quiet — the primary action everywhere is ORDER NOW, which
+ * feeds the order form → Lead → confirmation → Purchase funnel.
+ */
+export function WhatsAppSecondary({
+  whatsapp,
+  productName,
+  dark = false,
+}: {
+  whatsapp: string;
+  productName: string;
+  dark?: boolean;
+}) {
+  if (!whatsapp) return null;
+  return (
+    <p className={`text-center text-sm ${dark ? 'text-white/70' : 'text-gray-600'}`}>
+      Have a question?{' '}
+      <a
+        href={whatsappLink(whatsapp, `Hello Kanziy, I have a question about the ${productName}.`)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`font-semibold underline underline-offset-2 ${dark ? 'text-white hover:text-gold-soft' : 'text-navy hover:text-gold'}`}
+      >
+        Chat with us on WhatsApp
+      </a>
+    </p>
+  );
+}
+
+/**
+ * CTA block with the standard hierarchy: one dominant gold ORDER NOW,
+ * then quiet secondary links (WhatsApp question line, phone).
+ */
 export function ContactButtons({
   phone,
   whatsapp,
   productName,
+  ctaText = 'Order Now',
   variant = 'light',
 }: {
   phone: string;
   whatsapp: string;
   productName: string;
+  ctaText?: string;
   variant?: 'light' | 'dark';
 }) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
-      <a href="#order-form" className="btn-gold flex-1">Order Now</a>
+    <div className="space-y-3">
+      <a href="#order-form" className="btn-gold w-full py-4 text-base">{ctaText}</a>
+      <WhatsAppSecondary whatsapp={whatsapp} productName={productName} dark={variant === 'dark'} />
       {phone && (
-        <a href={`tel:${phone}`} className={variant === 'dark' ? 'btn-outline flex-1 border-white/40 text-white hover:bg-white/10' : 'btn-navy flex-1'}>
-          Call Us
-        </a>
-      )}
-      {whatsapp && (
-        <a
-          href={whatsappLink(whatsapp, `Hello Kanziy, I'm interested in the ${productName}.`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-outline flex-1"
-        >
-          WhatsApp Us
-        </a>
+        <p className={`text-center text-xs ${variant === 'dark' ? 'text-white/50' : 'text-gray-400'}`}>
+          Prefer to call?{' '}
+          <a href={`tel:${phone}`} className={variant === 'dark' ? 'font-medium text-white/80 hover:text-white' : 'font-medium text-gray-600 hover:text-navy'}>
+            {phone}
+          </a>
+        </p>
       )}
     </div>
   );

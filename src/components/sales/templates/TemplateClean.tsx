@@ -18,15 +18,16 @@ export default function TemplateClean({ view }: { view: SalesPageView }) {
         <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           <Gallery images={product.images} alt={product.name} />
           <div>
+            {/* Hero hierarchy: name → pitch → price → ORDER NOW → secondary WhatsApp */}
             <h1 className="text-3xl font-extrabold text-navy md:text-4xl">{page.headline}</h1>
             {page.subheadline && <p className="mt-2 text-gray-600">{page.subheadline}</p>}
             <p className="mt-4 text-3xl font-bold text-navy">{formatNaira(product.price)}</p>
             <p className="mt-1 text-sm text-gold">Free Delivery • Free Installation • Pay After Inspection</p>
             <div className="mt-6">
-              <SellingPoints points={view.sellingPoints} />
+              <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} ctaText={page.ctaText} />
             </div>
             <div className="mt-8">
-              <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} />
+              <SellingPoints points={view.sellingPoints} />
             </div>
           </div>
         </div>
@@ -77,7 +78,7 @@ export default function TemplateClean({ view }: { view: SalesPageView }) {
         </div>
       </section>
 
-      <StickyCTA whatsapp={contact.whatsapp} productName={product.name} ctaText={page.ctaText} />
+      <StickyCTA price={product.price} ctaText={page.ctaText} />
     </div>
   );
 }

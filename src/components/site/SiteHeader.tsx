@@ -30,7 +30,7 @@ export default function SiteHeader({
               href={whatsappLink(whatsapp, 'Hello Kanziy, I would like to make an enquiry.')}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-navy hover:bg-gold-bright"
+              className="rounded-md border border-white/30 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
             >
               WhatsApp
             </a>

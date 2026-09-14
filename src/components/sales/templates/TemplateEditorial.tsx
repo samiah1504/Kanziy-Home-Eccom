@@ -84,12 +84,12 @@ export default function TemplateEditorial({ view }: { view: SalesPageView }) {
             <OrderForm salesPageId={page.id} productName={product.name} price={product.price} ctaText={page.ctaText} colorVariants={product.colorVariants} />
           </div>
           <div className="mt-8">
-            <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} variant="dark" />
+            <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} ctaText={page.ctaText} variant="dark" />
           </div>
         </div>
       </section>
 
-      <StickyCTA whatsapp={contact.whatsapp} productName={product.name} ctaText={page.ctaText} />
+      <StickyCTA price={product.price} ctaText={page.ctaText} />
     </div>
   );
 }

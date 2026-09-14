@@ -7,6 +7,7 @@ import StickyCTA from '../StickyCTA';
 import {
   ContactButtons, DeliveryPhotos, FaqSection, HowItWorks,
   SellingPoints, SpecsSection, Testimonials, TrustBadges, VideosBlock,
+  WhatsAppSecondary,
 } from '../sections';
 import { formatNaira } from '@/lib/utils';
 import type { SalesPageView } from '../types';
@@ -26,9 +27,9 @@ export default function TemplateBold({ view }: { view: SalesPageView }) {
                 <span className="text-4xl font-extrabold text-gold-bright">{formatNaira(product.price)}</span>
                 <span className="text-sm text-white/70">Pay after inspection</span>
               </div>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <a href="#order-form" className="btn-gold flex-1 py-4 text-base">{page.ctaText}</a>
-                <ContactWhatsApp contact={contact} productName={product.name} />
+              <div className="mt-6 space-y-3">
+                <a href="#order-form" className="btn-gold w-full py-4 text-base sm:max-w-sm">{page.ctaText}</a>
+                <WhatsAppSecondary whatsapp={contact.whatsapp} productName={product.name} dark />
               </div>
             </div>
             <div className="order-1 md:order-2">
@@ -76,33 +77,12 @@ export default function TemplateBold({ view }: { view: SalesPageView }) {
           <h2 className="mb-6 text-2xl font-extrabold text-navy">Questions? Answered.</h2>
           <FaqSection faqs={view.faqs} />
           <div className="mt-8">
-            <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} />
+            <ContactButtons phone={contact.phone} whatsapp={contact.whatsapp} productName={product.name} ctaText={page.ctaText} />
           </div>
         </section>
       )}
 
-      <StickyCTA whatsapp={contact.whatsapp} productName={product.name} ctaText={page.ctaText} />
+      <StickyCTA price={product.price} ctaText={page.ctaText} />
     </div>
-  );
-}
-
-function ContactWhatsApp({
-  contact,
-  productName,
-}: {
-  contact: { whatsapp: string };
-  productName: string;
-}) {
-  if (!contact.whatsapp) return null;
-  const clean = contact.whatsapp.replace(/[^0-9]/g, '');
-  return (
-    <a
-      href={`https://wa.me/${clean}?text=${encodeURIComponent(`Hello Kanziy, I'm interested in the ${productName}.`)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="btn-outline flex-1 border-white/40 py-4 text-base text-white hover:bg-white/10"
-    >
-      WhatsApp Us
-    </a>
   );
 }
