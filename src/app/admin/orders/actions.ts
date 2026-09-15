@@ -64,15 +64,25 @@ export async function confirmOrder(orderId: string) {
   refresh(orderId);
 }
 
-/** Retry a failed/skipped Purchase event for an already-confirmed order. */
+/**
+ * Retry a failed/skipped Purchase event for an already-confirmed order.
+ * Also recovers orders stranded in SENDING (a crash between claiming the
+ * send and recording its result) — safe because the event_id is stable,
+ * so Meta deduplicates even if the original send did go through.
+ */
 export async function retryPurchaseEvent(orderId: string) {
   const { user, order } = await getAuthorizedOrder(orderId);
   if (order.status !== 'CONFIRMED') throw new Error('Order is not confirmed');
-  await firePurchaseEvent(orderId, user.id, order.ref);
+  await firePurchaseEvent(orderId, user.id, order.ref, { recoverStuck: true });
   refresh(orderId);
 }
 
-async function firePurchaseEvent(orderId: string, userId: string, ref: string) {
+async function firePurchaseEvent(
+  orderId: string,
+  userId: string,
+  ref: string,
+  opts: { recoverStuck?: boolean } = {}
+) {
   // Stable event_id for the life of the order (dedup key at Meta).
   const existing = await db.order.findUniqueOrThrow({ where: { id: orderId } });
   let eventId = existing.purchaseEventId;
@@ -87,10 +97,13 @@ async function firePurchaseEvent(orderId: string, userId: string, ref: string) {
   // Atomically claim the send. If another request already sent (or is
   // sending) the event, count === 0 and we do nothing — this is the
   // duplicate-Purchase protection.
+  const claimable = opts.recoverStuck
+    ? ['NOT_SENT', 'FAILED', 'SKIPPED', 'SENDING']
+    : ['NOT_SENT', 'FAILED', 'SKIPPED'];
   const claim = await db.order.updateMany({
     where: {
       id: orderId,
-      purchaseEventStatus: { in: ['NOT_SENT', 'FAILED', 'SKIPPED'] },
+      purchaseEventStatus: { in: claimable },
     },
     data: { purchaseEventStatus: 'SENDING' },
   });

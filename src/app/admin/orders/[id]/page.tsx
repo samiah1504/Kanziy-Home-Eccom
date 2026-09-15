@@ -236,9 +236,11 @@ export default async function OrderDetailPage({
               <p className="mt-2 rounded bg-red-50 p-2 text-xs text-red-700">{order.purchaseEventError}</p>
             )}
             {order.status === 'CONFIRMED' &&
-              ['FAILED', 'SKIPPED'].includes(order.purchaseEventStatus) && (
+              ['FAILED', 'SKIPPED', 'SENDING', 'NOT_SENT'].includes(order.purchaseEventStatus) && (
                 <form action={retryPurchaseEvent.bind(null, order.id)} className="mt-3">
-                  <button type="submit" className="btn-navy w-full py-2 text-xs">Retry Purchase Event</button>
+                  <button type="submit" className="btn-navy w-full py-2 text-xs">
+                    {order.purchaseEventStatus === 'SENDING' ? 'Resend Purchase Event' : 'Retry Purchase Event'}
+                  </button>
                 </form>
               )}
             <p className="mt-3 text-xs text-gray-400">
