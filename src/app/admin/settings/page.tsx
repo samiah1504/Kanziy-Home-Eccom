@@ -45,7 +45,15 @@ export default async function SettingsPage() {
           <div>
             <label className="label">Test Event Code (optional)</label>
             <input className="input" name="metaTestEventCode" defaultValue={settings.metaTestEventCode} />
-            <p className="mt-1 text-xs text-gray-400">Set while testing in Meta Events Manager; clear for live traffic.</p>
+            {settings.metaTestEventCode ? (
+              <p className="mt-1 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800">
+                ⚠ <strong>Currently ACTIVE.</strong> All server events (Lead, Purchase, ViewContent) are going
+                only to the Test Events tab in Events Manager and are NOT counted as real conversions or used
+                for ad optimization. Clear this field and save to go live.
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-400">Set while testing in Meta Events Manager; clear for live traffic.</p>
+            )}
           </div>
         </div>
 

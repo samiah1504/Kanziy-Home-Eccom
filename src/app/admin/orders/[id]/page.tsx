@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser, accessibleSalesPageIds } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { whatsappLink } from '@/lib/settings';
+import { getSettings, whatsappLink } from '@/lib/settings';
 import { formatNaira, STATUS_LABELS, STATUS_STYLES } from '@/lib/utils';
 import {
   addOrderNote, clearFollowUp, confirmOrder, retryPurchaseEvent,
@@ -50,10 +50,13 @@ export default async function OrderDetailPage({
     });
   }
 
-  const events = await db.orderEvent.findMany({
-    where: { orderId: order.id },
-    orderBy: { createdAt: 'asc' },
-  });
+  const [events, settings] = await Promise.all([
+    db.orderEvent.findMany({
+      where: { orderId: order.id },
+      orderBy: { createdAt: 'asc' },
+    }),
+    getSettings(),
+  ]);
 
   const opsText = [
     `KANZIY ORDER — ${order.ref}`,
@@ -219,6 +222,13 @@ export default async function OrderDetailPage({
           {/* Meta Purchase event state */}
           <div className="admin-card">
             <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-gold">Meta Purchase Event</h2>
+            {settings.metaTestEventCode && (
+              <p className="mb-3 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800">
+                ⚠ <strong>Test Event Code is active</strong> in Settings. Server events (including Purchase)
+                go only to the Test Events tab in Events Manager and are NOT counted as real conversions.
+                Clear it in Admin → Settings for live tracking.
+              </p>
+            )}
             <p className="text-sm">
               Status:{' '}
               <span className={`font-semibold ${

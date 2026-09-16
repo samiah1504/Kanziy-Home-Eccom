@@ -145,7 +145,7 @@ async function firePurchaseEvent(
         orderId,
         userId,
         type: 'PURCHASE_EVENT_SENT',
-        message: `Meta Purchase event sent for ${ref} (event_id ${eventId})`,
+        message: `Meta Purchase event sent for ${ref} (event_id ${eventId}; ${result.detail})`,
       },
     });
   } else {

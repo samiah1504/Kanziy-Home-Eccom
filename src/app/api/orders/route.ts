@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
       data: {
         orderId: order.id,
         type: 'LEAD_EVENT_SENT',
-        message: 'Meta Lead event sent',
+        message: `Meta Lead event sent (${leadResult.detail})`,
       },
     });
   }

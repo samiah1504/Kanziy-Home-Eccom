@@ -9,7 +9,7 @@
 import { createHash, randomUUID } from 'crypto';
 import { getSettings } from './settings';
 
-const GRAPH_URL = 'https://graph.facebook.com/v19.0';
+const GRAPH_URL = process.env.META_GRAPH_URL || 'https://graph.facebook.com/v19.0';
 
 export type CapiUserData = {
   phone?: string | null;
@@ -20,7 +20,7 @@ export type CapiUserData = {
 };
 
 export type CapiResult =
-  | { status: 'SENT' }
+  | { status: 'SENT'; detail: string }
   | { status: 'SKIPPED'; reason: string }
   | { status: 'FAILED'; error: string };
 
@@ -106,7 +106,27 @@ export async function sendMetaEvent(params: {
         error: `Meta API ${res.status}: ${text.slice(0, 500)}`,
       };
     }
-    return { status: 'SENT' };
+
+    // Capture Meta's receipt: events_received proves the event was recorded,
+    // and fbtrace_id is Meta's own reference for this delivery (their support
+    // can look it up). Both go into the order timeline.
+    const receipt = (await res.json().catch(() => ({}))) as {
+      events_received?: number;
+      fbtrace_id?: string;
+    };
+    if (receipt.events_received !== undefined && receipt.events_received < 1) {
+      return {
+        status: 'FAILED',
+        error: `Meta accepted the request but recorded 0 events (fbtrace_id ${receipt.fbtrace_id ?? 'n/a'})`,
+      };
+    }
+    const testWarning = settings.metaTestEventCode
+      ? ` — TEST MODE (test_event_code "${settings.metaTestEventCode}"): visible ONLY in Events Manager → Test Events tab, NOT counted as a real conversion. Clear the Test Event Code in Admin → Settings for live tracking.`
+      : '';
+    return {
+      status: 'SENT',
+      detail: `events_received=${receipt.events_received ?? 'n/a'}, fbtrace_id=${receipt.fbtrace_id ?? 'n/a'}${testWarning}`,
+    };
   } catch (err) {
     return { status: 'FAILED', error: String(err).slice(0, 500) };
   }
