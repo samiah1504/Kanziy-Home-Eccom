@@ -14,6 +14,62 @@ const NIGERIAN_STATES = [
   'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
 ];
 
+const MAX_QUANTITY = 100;
+
+// Quantities are kept as raw strings so customers can clear the box and type
+// their own number; this returns the whole number, or null when empty/invalid.
+function parseQuantity(value: string): number | null {
+  if (!/^\d+$/.test(value)) return null;
+  const n = parseInt(value, 10);
+  return n >= 1 ? n : null;
+}
+
+function QuantityStepper({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const n = parseQuantity(value) ?? 0;
+  return (
+    <div className="flex items-stretch">
+      <button
+        type="button"
+        aria-label={`Decrease ${label}`}
+        onClick={() => onChange(String(Math.max(1, n - 1)))}
+        className="w-10 shrink-0 rounded-l-md border border-r-0 border-gray-300 bg-cream text-lg font-bold text-navy"
+      >
+        −
+      </button>
+      <input
+        className="input rounded-none text-center"
+        id={id}
+        aria-label={label}
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        required
+        placeholder="Qty"
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+      />
+      <button
+        type="button"
+        aria-label={`Increase ${label}`}
+        onClick={() => onChange(String(Math.min(MAX_QUANTITY, n + 1)))}
+        className="w-10 shrink-0 rounded-r-md border border-l-0 border-gray-300 bg-cream text-lg font-bold text-navy"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 export default function OrderForm({
   salesPageId,
   productName,
@@ -30,14 +86,53 @@ export default function OrderForm({
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState('1');
+  // Colours the customer ticked, in the order they ticked them, each with its
+  // own quantity. Tapping a ticked colour again removes it.
+  const [colorSelections, setColorSelections] = useState<{ name: string; quantity: string }[]>([]);
+
+  const hasColors = colorVariants.length > 0;
+  const totalQuantity = hasColors
+    ? colorSelections.reduce((sum, c) => sum + (parseQuantity(c.quantity) ?? 0), 0)
+    : parseQuantity(quantity) ?? 0;
+  const colorSummary =
+    colorSelections.length === 1
+      ? colorSelections[0].name
+      : colorSelections.map((c) => `${c.name} (${parseQuantity(c.quantity) ?? 0})`).join(', ');
+
+  function toggleColor(name: string) {
+    setError(null);
+    setColorSelections((prev) =>
+      prev.some((c) => c.name === name)
+        ? prev.filter((c) => c.name !== name)
+        : [...prev, { name, quantity: '1' }]
+    );
+  }
+
+  function setColorQuantity(name: string, value: string) {
+    setError(null);
+    setColorSelections((prev) => prev.map((c) => (c.name === name ? { ...c, quantity: value } : c)));
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    if (colorVariants.length > 0 && !selectedColor) {
-      setError('Please select your preferred colour above.');
+    if (hasColors) {
+      if (colorSelections.length === 0) {
+        setError('Please select at least one colour above.');
+        return;
+      }
+      const missing = colorSelections.find((c) => parseQuantity(c.quantity) === null);
+      if (missing) {
+        setError(`Please enter the quantity you want for ${missing.name}.`);
+        return;
+      }
+    } else if (parseQuantity(quantity) === null) {
+      setError('Please enter the quantity you want.');
+      return;
+    }
+    if (totalQuantity > MAX_QUANTITY) {
+      setError(`The maximum is ${MAX_QUANTITY} items per order. Please call or WhatsApp us for larger orders.`);
       return;
     }
     setSubmitting(true);
@@ -54,9 +149,11 @@ export default function OrderForm({
           address: form.get('address'),
           state: form.get('state'),
           city: form.get('city'),
-          quantity: form.get('quantity'),
+          quantity: totalQuantity,
           customerNote: form.get('customerNote'),
-          selectedColor,
+          colorSelections: hasColors
+            ? colorSelections.map((c) => ({ name: c.name, quantity: parseQuantity(c.quantity) }))
+            : undefined,
           attribution: getAttribution(),
         }),
       });
@@ -75,18 +172,19 @@ export default function OrderForm({
 
   return (
     <form id="order-form" onSubmit={handleSubmit} className="space-y-4">
-      {colorVariants.length > 0 && (
+      {hasColors && (
         <fieldset>
-          <legend className="label">Choose Your Colour *</legend>
+          <legend className="label">Choose Your Colour(s) *</legend>
+          <p className="-mt-1 mb-2 text-xs text-gray-500">Tap to select one or more colours. Tap again to remove.</p>
           <div className="flex flex-wrap gap-2">
             {colorVariants.map((v) => {
-              const active = selectedColor === v.name;
+              const active = colorSelections.some((c) => c.name === v.name);
               return (
                 <button
                   key={v.name}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => setSelectedColor(v.name)}
+                  onClick={() => toggleColor(v.name)}
                   className={`flex items-center gap-2 rounded-md border-2 px-2 py-1.5 text-sm font-medium transition ${
                     active
                       ? 'border-gold bg-gold/10 text-navy'
@@ -105,6 +203,32 @@ export default function OrderForm({
               );
             })}
           </div>
+          {colorSelections.length > 0 && (
+            <div className="mt-3 space-y-2 rounded-md border border-gray-200 bg-white p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Quantity per colour *</p>
+              {colorSelections.map((c) => (
+                <div key={c.name} className="flex items-center gap-3">
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-navy">{c.name}</span>
+                  <div className="w-36">
+                    <QuantityStepper
+                      id={`quantity-${c.name}`}
+                      label={`Quantity for ${c.name}`}
+                      value={c.quantity}
+                      onChange={(value) => setColorQuantity(c.name, value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${c.name}`}
+                    onClick={() => toggleColor(c.name)}
+                    className="shrink-0 px-1 text-lg leading-none text-gray-400 hover:text-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </fieldset>
       )}
       <div>
@@ -125,7 +249,7 @@ export default function OrderForm({
         <label className="label" htmlFor="address">Delivery Address *</label>
         <input className="input" id="address" name="address" required autoComplete="street-address" placeholder="Street address for delivery" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className={`grid gap-4 ${hasColors ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
         <div>
           <label className="label" htmlFor="state">State *</label>
           <select className="input" id="state" name="state" required defaultValue="">
@@ -139,19 +263,20 @@ export default function OrderForm({
           <label className="label" htmlFor="city">City</label>
           <input className="input" id="city" name="city" placeholder="City / area" />
         </div>
-        <div>
-          <label className="label" htmlFor="quantity">Quantity</label>
-          <input
-            className="input"
-            id="quantity"
-            name="quantity"
-            type="number"
-            min={1}
-            max={100}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-          />
-        </div>
+        {!hasColors && (
+          <div>
+            <label className="label" htmlFor="quantity">Quantity *</label>
+            <QuantityStepper
+              id="quantity"
+              label="Quantity"
+              value={quantity}
+              onChange={(value) => {
+                setError(null);
+                setQuantity(value);
+              }}
+            />
+          </div>
+        )}
       </div>
       <div>
         <label className="label" htmlFor="customerNote">Additional Information</label>
@@ -161,9 +286,9 @@ export default function OrderForm({
       <div className="flex items-center justify-between rounded-md bg-cream px-4 py-3 text-sm">
         <span className="font-medium text-navy">
           {productName}
-          {selectedColor ? ` — ${selectedColor}` : ''} × {quantity}
+          {colorSummary ? ` — ${colorSummary}` : ''} × {totalQuantity}
         </span>
-        <span className="text-lg font-bold text-navy">{formatNaira(price * quantity)}</span>
+        <span className="text-lg font-bold text-navy">{formatNaira(price * totalQuantity)}</span>
       </div>
 
       {error && (

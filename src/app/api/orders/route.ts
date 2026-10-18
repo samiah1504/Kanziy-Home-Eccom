@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     quantity,
     customerNote,
     selectedColor,
+    colorSelections,
     attribution = {},
   } = body ?? {};
 
@@ -58,7 +59,55 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const qty = Math.min(Math.max(parseInt(String(quantity), 10) || 1, 1), 100);
+  // Quantity is required. Customers who pick several colours send a quantity
+  // per colour; the order stores the combined quantity and a readable colour
+  // summary, e.g. "Black (2), Brown (1)". Visitors still on the previous
+  // version of the page send a single selectedColor + quantity instead.
+  const toQty = (v: unknown) => {
+    const n = typeof v === 'number' ? v : Number(String(v ?? '').trim());
+    return Number.isInteger(n) && n >= 1 ? n : null;
+  };
+
+  let qty: number | null;
+  let colorSummary: string | undefined;
+  if (Array.isArray(colorSelections) && colorSelections.length > 0) {
+    const merged = new Map<string, number>();
+    for (const c of colorSelections.slice(0, 50)) {
+      const name = typeof c?.name === 'string' ? c.name.trim().slice(0, 100) : '';
+      const q = toQty(c?.quantity);
+      if (!name || q === null) {
+        return NextResponse.json(
+          { ok: false, error: 'Please enter the quantity you want for each colour you selected.' },
+          { status: 400 }
+        );
+      }
+      merged.set(name, (merged.get(name) ?? 0) + q);
+    }
+    const entries = Array.from(merged.entries());
+    qty = entries.reduce((sum, [, q]) => sum + q, 0);
+    colorSummary =
+      entries.length === 1
+        ? entries[0][0]
+        : entries.map(([name, q]) => `${name} (${q})`).join(', ');
+  } else {
+    qty = toQty(quantity);
+    colorSummary =
+      typeof selectedColor === 'string' && selectedColor.trim()
+        ? selectedColor.trim().slice(0, 100)
+        : undefined;
+  }
+  if (qty === null) {
+    return NextResponse.json(
+      { ok: false, error: 'Please enter the quantity you want.' },
+      { status: 400 }
+    );
+  }
+  if (qty > 100) {
+    return NextResponse.json(
+      { ok: false, error: 'The maximum is 100 items per order. Please call or WhatsApp us for larger orders.' },
+      { status: 400 }
+    );
+  }
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined;
   const userAgent = req.headers.get('user-agent') || undefined;
@@ -102,10 +151,7 @@ export async function POST(req: NextRequest) {
           state: state.trim().slice(0, 100),
           city: str(city),
           customerNote: str(customerNote),
-          selectedColor:
-            typeof selectedColor === 'string' && selectedColor.trim()
-              ? selectedColor.trim().slice(0, 100)
-              : undefined,
+          selectedColor: colorSummary,
           trafficSource: deriveTrafficSource({ ...attr }),
           ...attr,
           userAgent,
