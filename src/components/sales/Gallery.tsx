@@ -29,13 +29,15 @@ export default function Gallery({
         loading="eager"
       />
       {images.length > 1 && (
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+        // Thumbnails wrap onto new rows (5 per row) instead of scrolling
+        // sideways, so adding more photos never pushes them off-screen.
+        <div className="mt-3 grid grid-cols-5 gap-2">
           {images.map((src, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setActive(i)}
-              className={`h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 ${i === active ? 'border-gold' : 'border-transparent'}`}
+              className={`aspect-square w-full overflow-hidden rounded-md border-2 ${i === active ? 'border-gold' : 'border-transparent'}`}
               aria-label={`View image ${i + 1}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
