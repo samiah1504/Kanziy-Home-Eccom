@@ -58,6 +58,17 @@ export default async function OrderDetailPage({
     getSettings(),
   ]);
 
+  // Pre-filled confirmation message for the "WhatsApp Customer" button.
+  const customerWhatsappMessage = [
+    `Hello ${order.customerName.trim()},`,
+    '',
+    `You recently placed an order for ${order.quantity > 1 ? `${order.quantity} × ` : ''}${order.productName}${
+      order.selectedColor ? ` (Colour: ${order.selectedColor})` : ''
+    } through ${settings.siteName}.`,
+    '',
+    `Please confirm that you are still ready to receive the product and pay ${formatNaira(order.totalValue)} on delivery.`,
+  ].join('\n');
+
   const opsText = [
     `KANZIY ORDER — ${order.ref}`,
     `Product: ${order.productName}`,
@@ -107,7 +118,7 @@ export default async function OrderDetailPage({
               <div className="mt-4 flex gap-2">
                 <a href={`tel:${order.phone}`} className="btn-navy flex-1 py-2 text-xs">Call Customer</a>
                 <a
-                  href={whatsappLink(order.whatsapp || order.phone, `Hello ${order.customerName.split(' ')[0]}, this is Kanziy Customer Support regarding your order ${order.ref} (${order.productName}).`)}
+                  href={whatsappLink(order.whatsapp || order.phone, customerWhatsappMessage)}
                   target="_blank" rel="noopener noreferrer"
                   className="btn-gold flex-1 py-2 text-xs"
                 >
