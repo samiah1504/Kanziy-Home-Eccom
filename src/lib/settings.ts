@@ -45,8 +45,21 @@ export async function saveSettings(values: Partial<SiteSettings>) {
   }
 }
 
+/**
+ * WhatsApp links need the number in international format without "+".
+ * Customers usually type Nigerian numbers locally (0801 234 5678), so those
+ * are converted to 234…; numbers already in another format are left as-is.
+ */
+export function toWhatsAppNumber(number: string) {
+  const digits = number.replace(/[^0-9]/g, '');
+  if (digits.length === 11 && digits.startsWith('0')) return `234${digits.slice(1)}`; // 0801…
+  if (digits.length === 10 && /^[789]/.test(digits)) return `234${digits}`; // 801… (leading 0 dropped)
+  if (digits.length === 14 && digits.startsWith('2340')) return `234${digits.slice(4)}`; // +234 0801…
+  return digits;
+}
+
 export function whatsappLink(number: string, text?: string) {
-  const clean = number.replace(/[^0-9]/g, '');
+  const clean = toWhatsAppNumber(number);
   const q = text ? `?text=${encodeURIComponent(text)}` : '';
   return `https://wa.me/${clean}${q}`;
 }
